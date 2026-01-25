@@ -1,0 +1,27 @@
+# Helm
+charts/observability-stack/charts/
+charts/observability-stack/Chart.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit these)
+secrets/
+*.key
+*.pem
+
+# Temporary files
+*.tmp
+*.bak
+
+# Terraform (if used for infrastructure)
+.terraform/
+*.tfstate
+*.tfstate.*
