@@ -1,0 +1,186 @@
+# OpenTelemetry Collector Configuration
+# This config provides a unified telemetry pipeline for metrics, traces, and logs.
+#
+# Deploy as a DaemonSet for node-level collection or Deployment for gateway mode.
+
+receivers:
+  # OTLP receiver for application telemetry
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+
+  # Prometheus receiver for scraping existing metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+  # Host metrics (when running as DaemonSet)
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      load:
+      memory:
+      network:
+      processes:
+
+  # Kubernetes cluster metrics
+  k8s_cluster:
+    collection_interval: 30s
+    node_conditions_to_report:
+      - Ready
+      - MemoryPressure
+      - DiskPressure
+      - PIDPressure
+
+processors:
+  # Batch processor for efficient exports
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1500
+    spike_limit_mib: 500
+
+  # Resource detection for cloud metadata
+  resourcedetection:
+    detectors:
+      - env
+      - system
+      - ec2
+      - gcp
+      - azure
+      - k8snode
+    timeout: 5s
+    override: false
+
+  # Add Kubernetes metadata to telemetry
+  k8sattributes:
+    auth_type: serviceAccount
+    passthrough: false
+    extract:
+      metadata:
+        - k8s.pod.name
+        - k8s.pod.uid
+        - k8s.deployment.name
+        - k8s.namespace.name
+        - k8s.node.name
+        - k8s.pod.start_time
+      labels:
+        - tag_name: app
+          key: app
+          from: pod
+        - tag_name: version
+          key: version
+          from: pod
+    pod_association:
+      - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+      - sources:
+          - from: resource_attribute
+            name: k8s.pod.uid
+      - sources:
+          - from: connection
+
+  # Filter out noisy metrics
+  filter:
+    metrics:
+      exclude:
+        match_type: regexp
+        metric_names:
+          - ".*_bucket"  # Remove histogram buckets if needed
+
+  # Transform/rename attributes
+  attributes:
+    actions:
+      - key: environment
+        value: production
+        action: upsert
+
+exporters:
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: otel
+    send_timestamps: true
+    metric_expiration: 5m
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # Debug/logging exporter
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # OTLP exporter (for sending to another collector or backend)
+  otlp:
+    endpoint: "tempo.monitoring.svc.cluster.local:4317"
+    tls:
+      insecure: true
+
+  # Prometheus Remote Write (for long-term storage)
+  prometheusremotewrite:
+    endpoint: "http://thanos-receive.monitoring.svc.cluster.local:19291/api/v1/receive"
+    tls:
+      insecure: true
+
+extensions:
+  # Health check endpoint
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: /health
+
+  # Performance profiling
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zPages for debugging
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus, hostmetrics]
+      processors: [memory_limiter, resourcedetection, k8sattributes, batch]
+      exporters: [prometheus, logging]
+
+    # Traces pipeline
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, k8sattributes, batch]
+      exporters: [otlp, logging]
+
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, k8sattributes, batch]
+      exporters: [logging]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888
