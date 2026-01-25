@@ -1,0 +1,131 @@
+# SLO-based alerts using Multi-Window Multi-Burn-Rate method
+# Reference: https://sre.google/workbook/alerting-on-slos/
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: slo-alerts
+  labels:
+    app: observability-stack
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: slo.availability
+      rules:
+        # High burn rate alert - 2% of monthly budget in 1 hour
+        # Fires when consuming error budget 14.4x faster than sustainable
+        - alert: SLOHighErrorBudgetBurn
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[1h])) 
+              / sum(rate(http_requests_total[1h]))
+            ) > (14.4 * 0.001)
+            and
+            (
+              sum(rate(http_requests_total{status=~"5.."}[5m])) 
+              / sum(rate(http_requests_total[5m]))
+            ) > (14.4 * 0.001)
+          for: 2m
+          labels:
+            severity: critical
+            slo: availability
+          annotations:
+            summary: "High error budget burn rate detected"
+            description: "Service {{ $labels.job }} is burning error budget at {{ $value | humanizePercentage }} which will exhaust the monthly budget in less than 3 days."
+            runbook_url: "https://runbooks.example.com/slo-high-burn-rate"
+
+        # Medium burn rate alert - 5% of monthly budget in 6 hours
+        - alert: SLOMediumErrorBudgetBurn
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[6h])) 
+              / sum(rate(http_requests_total[6h]))
+            ) > (6 * 0.001)
+            and
+            (
+              sum(rate(http_requests_total{status=~"5.."}[30m])) 
+              / sum(rate(http_requests_total[30m]))
+            ) > (6 * 0.001)
+          for: 15m
+          labels:
+            severity: warning
+            slo: availability
+          annotations:
+            summary: "Medium error budget burn rate detected"
+            description: "Service {{ $labels.job }} error budget consumption is elevated. Current burn rate will exhaust monthly budget in approximately 1 week."
+
+        # Low burn rate alert - 10% of monthly budget in 3 days
+        - alert: SLOLowErrorBudgetBurn
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[3d])) 
+              / sum(rate(http_requests_total[3d]))
+            ) > (1 * 0.001)
+          for: 1h
+          labels:
+            severity: info
+            slo: availability
+          annotations:
+            summary: "Slow error budget burn detected"
+            description: "Service {{ $labels.job }} has been slowly consuming error budget. Review for potential improvements."
+
+    - name: slo.latency
+      rules:
+        # P99 latency SLO breach
+        - alert: SLOLatencyP99Breach
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job))
+            > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            slo: latency
+          annotations:
+            summary: "P99 latency SLO breach"
+            description: "Service {{ $labels.job }} P99 latency is {{ $value | humanizeDuration }}, exceeding 500ms SLO target."
+
+        # P99 latency critical
+        - alert: SLOLatencyP99Critical
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job))
+            > 2
+          for: 2m
+          labels:
+            severity: critical
+            slo: latency
+          annotations:
+            summary: "Critical P99 latency"
+            description: "Service {{ $labels.job }} P99 latency is {{ $value | humanizeDuration }}, over 2 seconds."
+
+    - name: slo.error-budget
+      rules:
+        # Monthly error budget almost exhausted
+        - alert: SLOErrorBudgetNearlyExhausted
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[30d])) 
+              / sum(rate(http_requests_total[30d]))
+            ) / 0.001
+            < 0.1
+          for: 30m
+          labels:
+            severity: critical
+            slo: error-budget
+          annotations:
+            summary: "Error budget nearly exhausted"
+            description: "Service {{ $labels.job }} has consumed over 90% of its monthly error budget. Only {{ $value | humanizePercentage }} remaining."
+
+        # Weekly error budget check
+        - alert: SLOErrorBudgetLow
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[30d])) 
+              / sum(rate(http_requests_total[30d]))
+            ) / 0.001
+            < 0.25
+          for: 1h
+          labels:
+            severity: warning
+            slo: error-budget
+          annotations:
+            summary: "Error budget running low"
+            description: "Service {{ $labels.job }} has consumed over 75% of its monthly error budget."
